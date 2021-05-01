@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Valve.VR;
 
 public class AIMgr : MonoBehaviour
 {
     public static AIMgr inst;
-    public float speed = 2f;
+
+    public bool whistling = false;
+
+    public float speed = 0f;
     public float rotateSpeed = 2;
     public NavMeshAgent agent;
     public Transform player;
@@ -15,10 +19,13 @@ public class AIMgr : MonoBehaviour
     private float timer = 15f;
     private bool timerOn = false; 
     Animator anim;
+
+    public Transform dog; 
     void Awake()
     {
         inst = this;
         anim = GetComponent<Animator>();
+       
     }
     // Start is called before the first frame update
     void Start()
@@ -29,44 +36,85 @@ public class AIMgr : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //what I want is if click button to call dog, dog comes. Like yelling for it 
-        if (Vector3.Distance(transform.position, player.position) >= theDistance)
+         if (SteamVR_Actions._default.Whistle.GetState(SteamVR_Input_Sources.Any))
+         {
+            //Debug.Log("Whistle??");
+            CancelInvoke("GetAttention");
+            Follow();
+         }
+    }
+    public void GetAttention()
+    {
+        //Debug.Log(Vector3.Distance(transform.position, ball.transform.position));
+        if (Vector3.Distance(transform.position, ball.transform.position) >= 2)
         {
-            speed = 2f;
+            speed = 3f;
             anim.SetBool("isMoving", true);
-            transform.position = Vector3.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
-            var rotation = Quaternion.LookRotation(player.transform.position - transform.position);
+            transform.position = Vector3.MoveTowards(transform.position, ball.transform.position, speed * Time.deltaTime);
+            var rotation = Quaternion.LookRotation(ball.transform.position - transform.position);
             transform.rotation = Quaternion.Slerp(transform.rotation, rotation, rotateSpeed * Time.deltaTime);
         }
         else
         {
+
             speed = 0f;
             anim.SetBool("isMoving", false);
-        }
-       /* if(speed == 0f)
-        {
-           
-            timerOn = true;
-            InvokeRepeating("BegToPlayTimer", 0.0f, 0.01667f);
-        }
-        else if(speed > 0)
-        {
-            
-            timerOn = false;
-            anim.SetBool("isMoving", true);
-           // anim.SetBool("isBored", false);
+            PickUpBall();
 
-        }*/
+        }
     }
-    void fetch()
+    public void Fetch()
     {
-        //If I throw ball
-        //then dog go towards ball
-        //dog reaches ball and picks it up
-        //dog walks towards me
-        //dog drops ball infront of me
+        //Debug.Log("GetAttention");
+        InvokeRepeating("GetAttention", 0.0f, 0.01667f);
     }
-    //Virus timer
+    public void PickUpBall()
+    {
+        CancelInvoke("GetAttention");
+        Debug.Log("PickUp");
+        ball.transform.SetParent(dog);
+        //ball.transform.localPosition = Vector3.zero;
+        InvokeRepeating("Follow", 0.0f, 0.01667f);
+        
+    }
+    public void PutDownBall()
+    {
+        Debug.Log("PutDown");
+        ball.transform.SetParent(null);
+        CancelInvoke("Follow");
+    }
+    public void Follow()
+    {
+        Debug.Log("Follow");
+
+        if (Vector3.Distance(transform.position, player.position) >= theDistance)
+            {
+                
+                speed = 2f;
+                anim.SetBool("isMoving", true);
+                transform.position = Vector3.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
+                var rotation = Quaternion.LookRotation(player.transform.position - transform.position);
+                transform.rotation = Quaternion.Slerp(transform.rotation, rotation, rotateSpeed * Time.deltaTime);
+            }
+            else
+            {
+                
+                speed = 0f;
+                anim.SetBool("isMoving", false);
+                PutDownBall();
+
+        }
+              
+    }
+    public void PetDog()
+    {
+        anim.SetBool("isPet", true);
+    }
+    public void StopPetDog()
+    {
+        anim.SetBool("isPet", false);
+    }
+    //Timer
     void BegToPlayTimer()
     {
         if (timerOn == true)
