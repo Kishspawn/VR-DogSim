@@ -5,7 +5,7 @@
       "app_key": "application.generated.unity.dogsimvr.exe",
       "launch_type": "url",
       "url": "steam://launch/",
-      "action_manifest_path": "D:\\Users\\Elizabeth\\Documents\\GitHub\\DogSim-VR\\Assets\\StreamingAssets\\SteamVR\\actions.json",
+      "action_manifest_path": "D:\\Users\\Elizabeth\\Documents\\GitHub\\VR-DogSim\\Assets\\StreamingAssets\\SteamVR\\actions.json",
       "strings": {
         "en_us": {
           "name": "DogSim-VR [Testing]"
